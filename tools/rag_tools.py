@@ -3,7 +3,7 @@ from langchain_core.tools import tool
 from rag.retriever import retrieve
 
 
-@tool
+
 def search_company_policy(question: str) -> dict:
     """
     Search the company knowledge base for policies and support rules.

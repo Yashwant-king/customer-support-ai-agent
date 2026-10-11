@@ -10,16 +10,14 @@ class SupportState(TypedDict):
     """
     Represents the state of the support system.
     """
-    messages:Annotated[list,add_messages]
+    # messages:Annotated[list,add_messages]
     customer_id:Any
-    customer_exists:bool
-    customer_query:str
+    customer_query:Any
     final_result:Any
+    node_1:Any
+    node_2:Any
+    blank_list:Any
     
-    
-    
-    
-
 
 
 
