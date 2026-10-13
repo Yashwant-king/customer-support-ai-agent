@@ -21,8 +21,6 @@ graph.add_node("analyse_answer_node", analyse_answer_node)
 
 
 
-
-
 #-----------------------------------------EDGES-------------------------------------------------------------
 graph.add_edge(START, "verification_node")
 graph.add_edge("verification_node", "node_1")
