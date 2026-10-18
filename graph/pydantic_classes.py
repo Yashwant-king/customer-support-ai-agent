@@ -16,3 +16,8 @@ class RequiredFunctions(BaseModel):
     functions: list[FunctionName] = Field(...,description="Minimum set of functions required to answer the query"
     )
 
+
+
+class Risk_Assessment(BaseModel):
+    risk:Literal["safe","unsafe"]=Field(...,description="Risk assessment of the query based on the customer query and the functions required to answer it")
+    

@@ -5,6 +5,9 @@ from graph.main import app
 from api.checking import Chatrequest,Chatresponse
 from langchain_core.runnables import RunnableConfig
 import uuid
+from dotenv import load_dotenv
+load_dotenv()
+
 customer_id="0002414f95344307404f0ace7a26f1d5"
 
 config: RunnableConfig = {
@@ -16,10 +19,6 @@ config: RunnableConfig = {
   
   
 fast_app=FastAPI()
-
-
-
-
 
 
 @fast_app.post("/chat",response_model=Chatresponse)
@@ -35,5 +34,6 @@ async def chat_endpoint(request: Chatrequest):
         return Chatresponse(final_resul=result["final_result"])
     except Exception as e:
         return HTTPException(status_code=500, detail=f"Error processing request: {e}")
+
 
 

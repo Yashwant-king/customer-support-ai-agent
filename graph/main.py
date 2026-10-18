@@ -2,7 +2,7 @@ from langgraph.graph import END,START
 from typing import cast
 import uuid
 from graph.state import SupportState, graph
-from graph.nodes import  analyse_answer_node,verification_node, node_1,node_2,merge_list_node
+from graph.nodes import  check_risk_node,analyse_answer_node,verification_node, node_1,node_2,merge_list_node
 from graph.random_id import get_random_customer_id
 
 from langgraph.checkpoint.memory import InMemorySaver
@@ -16,14 +16,15 @@ graph.add_node("node_1", node_1)
 graph.add_node("node_2", node_2)
 graph.add_node("merge_list_node", merge_list_node)
 graph.add_node("analyse_answer_node", analyse_answer_node)
-
+graph.add_node("check_risk_node", check_risk_node)
 
 
 
 
 #-----------------------------------------EDGES-------------------------------------------------------------
 graph.add_edge(START, "verification_node")
-graph.add_edge("verification_node", "node_1")
+graph.add_edge("verification_node", "check_risk_node")
+graph.add_edge("check_risk_node", "node_1")
 graph.add_edge("node_1", "node_2")
 graph.add_edge("node_2","merge_list_node")
 graph.add_edge("merge_list_node","analyse_answer_node")
@@ -44,13 +45,18 @@ if __name__=="__main__":
             "thread_id": str(uuid.uuid4()),
         },
     }
-    state=SupportState(
-        customer_id=customer_id,
-        customer_query="I want to know about my orders and payments.",
-        final_result=None,
-        node_1=None,
-        node_2=None,
-        blank_list=None
-    )
+    state: SupportState = {
+        "messages": [],
+        "customer_id": customer_id,
+        "customer_query": "I want my refund for this order.",
+        "final_result": None,
+        "node_1": None,
+        "node_2": None,
+        "blank_list": None,
+    }
     output=app.invoke(state,config=config)
     print(output["final_result"])
+
+
+
+    

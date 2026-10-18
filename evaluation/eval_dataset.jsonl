@@ -1,0 +1,6 @@
+
+{"query":"Where is my order?","expected_functions":["get_customer_orders"]}
+{"query":"Did my payment succeed?","expected_functions":["get_customer_payments"]}
+{"query":"What is your return policy?","expected_functions":["search_company_policy"]}
+{"query":"Hello, how are you?","expected_functions":[]}
+{"query":"What products have I purchased?","expected_functions":["get_customer_products"]}
