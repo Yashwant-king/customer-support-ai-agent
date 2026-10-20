@@ -15,7 +15,6 @@ class SupportState(TypedDict):
     customer_query:Any
     final_result:Any
     node_1:Any
-    node_2:Any
     blank_list:Any
     
 

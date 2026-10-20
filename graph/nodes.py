@@ -1,4 +1,5 @@
 from click import prompt
+from graph import state
 from graph.pydantic_classes import RequiredFunctions,Risk_Assessment
 from graph.state import SupportState
 from llm import llm
@@ -30,6 +31,7 @@ def verification_node(state:SupportState):
     Verify the customer's information.
     """
     print("Enter in verification_node")
+    print(f"user query: {state['customer_query']}")
     
     customer_id=state["customer_id"]    
     query = text("""
@@ -51,6 +53,8 @@ def verification_node(state:SupportState):
             update={"final_result": f"Customer with ID {customer_id} does not exist."},
             goto=END
         )
+    else:
+        return Command(goto="check_risk_node")
 
 
 #-----------------------------------------------------------------------------
@@ -71,16 +75,23 @@ def check_risk_node(state: SupportState):
 
     llm_sto = llm.with_structured_output(Risk_Assessment)
     risk_assessment = llm_sto.invoke(prompt)
+    
+    print(f"Risk assessment result: {risk_assessment.risk}")
 
-    if risk_assessment.risk == "unsafe":
+    print(f"Risk assessment details: {risk_assessment}")
+
+    result=risk_assessment.risk
+    
+
+    if str(result) == 'unsafe':
         return Command(
             update={
                 "final_result": "The query is unsafe to process."
             },
             goto=END
         )
-
-    return Command(goto="node_1")
+    else:
+        return Command(goto="node_1")
 
 
 #-------------------------------------------------------------------------------
@@ -217,162 +228,16 @@ Select the minimum sufficient set of functions for the actual customer query.
 
 #-----------------------------------------------------------------------------------
 
-def node_2(state:SupportState):
-    """
-    Handle the case where the customer is found.
-    """
-    print("Enter in node_2")
-    
-    prompt = f"""
-You are a query-analysis component in a customer support system.
 
-Your task is to identify the minimum set of functions required to answer
-the customer's query accurately.
-
-Customer query:
-{state['customer_query']}
-
-Available functions:
-
-## 1. CUSTOMER DATABASE FUNCTIONS
-
-- `get_customer_record`:
-  Retrieve the customer's profile and basic customer information.
-
-- `get_customer_orders`:
-  Retrieve the customer's orders and order-related information.
-
-- `get_customer_order_items`:
-  Retrieve items purchased in the customer's orders.
-
-- `get_customer_products`:
-  Retrieve product details for products purchased by the customer.
-
-- `get_customer_sellers`:
-  Retrieve sellers associated with the customer's orders.
-
-- `get_customer_payments`:
-  Retrieve payment records associated with the customer's orders.
-
-- `get_customer_reviews`:
-  Retrieve reviews associated with the customer's orders.
-
-## 2. COMPANY POLICY SEARCH (RAG)
-
-- `search_company_policy`:
-  Search the company's knowledge base using Retrieval-Augmented Generation
-  (RAG). Use this function to retrieve relevant company policies, rules,
-  procedures, and support guidelines.
-
-  Use this function when the customer asks about:
-  - Return, refund, or replacement policies
-  - Order cancellation rules
-  - Shipping, delivery, delays, or lost packages
-  - Payment methods or failed-payment procedures
-  - Product warranties
-  - Customer verification requirements
-  - Escalation procedures or human support
-  - Any other company-specific policy or support procedure
-
-  IMPORTANT:
-  - Prefer this function when the answer depends on company policy.
-  - Do not use customer database functions merely to answer a general
-    policy question.
-  - If the query requires both policy information and customer-specific
-    information, select the relevant policy and database functions.
-
-## DECISION RULES
-
-1. Identify exactly what information is needed to answer the query.
-
-2. Select only the functions necessary to obtain that information.
-   Do not select functions simply because they might be useful.
-
-3. For customer-specific questions, select the relevant database functions.
-
-4. For company policy questions, select `search_company_policy`.
-
-5. For questions requiring both customer-specific facts and company rules,
-   select both the relevant database functions and
-   `search_company_policy`.
-
-6. If the query can be answered without customer database information
-   or company policy retrieval, return an empty list.
-
-7. Use only the exact function names listed above.
-
-8. Return the result using the required structured output schema.
-   The `functions` field must contain a list of function names.
-   Do not return explanations or additional fields.
-
-EXAMPLES
-
-Customer: "Where is my order?"
-Functions: ["get_customer_orders"]
-
-Customer: "What is your return policy?"
-Functions: ["search_company_policy"]
-
-Customer: "Can I return my order, and what is the return policy?"
-Functions: ["get_customer_orders", "search_company_policy"]
-
-Customer: "Did my payment go through?"
-Functions: ["get_customer_payments"]
-
-Customer: "What payment methods do you support?"
-Functions: ["search_company_policy"]
-
-Customer: "Hello, how are you?"
-Functions: []
-
-Customer: "My package is late. What should I do?"
-Functions: ["get_customer_orders", "search_company_policy"]
-
-Select the minimum sufficient set of functions for the actual customer query.
-"""
-
-    llm_sto = llm.with_structured_output(
-    RequiredFunctions,
-    method="json_schema",
-    strict=True,
-)
-
-    try:
-        print("trying to invoke LLM for node_2")
-        llm_response = llm_sto.invoke(prompt)
-        return {"node_2": llm_response.functions}
-    except Exception as e:
-        print(f"Error invoking LLM: {e} ----------error in node_2")
-        return {"node_2": []}
-
-  
-
-
-#-----------------------------------------------------------------------
-# def time_node(state:SupportState):
-#     print("Enter in time_node")
-#     time.sleep(5)
-    
-#     print("5 seconds have passed")
-    
 #-----------------------------------------------------------------------------
 
 def merge_list_node(state: SupportState):
     """Execute the unique functions selected by node_1 and node_2."""
     print("Enter in merge_list_node")
 
-    selected_functions = (
-        state.get("node_1", []) + state.get("node_2", [])
-    )
+    node_1_result = state["node_1"]
 
-    # Remove duplicates while preserving order.
-    merged_list = list(dict.fromkeys(
-        item.strip()
-        for item in selected_functions
-        if isinstance(item, str) and item.strip()
-    ))
-
-    if not merged_list:
+    if not node_1_result:
         return {"blank_list": []}
 
     # Map approved function names to their implementations.
@@ -405,7 +270,7 @@ def merge_list_node(state: SupportState):
 
     # Reject unknown function names instead of silently ignoring them.
     unknown_functions = [
-        name for name in merged_list if name not in function_map
+        name for name in node_1_result if name not in function_map
     ]
 
     if unknown_functions:
@@ -415,7 +280,7 @@ def merge_list_node(state: SupportState):
 
     results = []
 
-    for function_name in merged_list:
+    for function_name in node_1_result  :
         result = function_map[function_name]()
         results.append(result)
 
@@ -428,6 +293,7 @@ def analyse_answer_node(state: SupportState):
     """Generate a customer answer grounded in retrieved information."""
 
     print("Enter in analyse_answer_node")
+    print(f"node_1: {state.get('node_1')}---------node_2: {state.get('node_2')}\n\n\n")
 
     customer_query = state["customer_query"]
     retrieved_info = state.get("blank_list", [])

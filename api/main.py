@@ -1,39 +1,35 @@
-from typing import Any, cast
 
-from fastapi import FastAPI,HTTPException
-from graph.main import app
-from api.checking import Chatrequest,Chatresponse
-from langchain_core.runnables import RunnableConfig
-import uuid
+from fastapi import Depends, FastAPI, HTTPException
 from dotenv import load_dotenv
+
+from auth.dependencies import get_current_user
+from api.checking import Chatrequest, Chatresponse
+
 load_dotenv()
 
-customer_id="0002414f95344307404f0ace7a26f1d5"
-
-config: RunnableConfig = {
-        "configurable": {
-            "thread_id": str(uuid.uuid4()),
-        }
-}
-
-  
-  
-fast_app=FastAPI()
+fast_app = FastAPI()
 
 
-@fast_app.post("/chat",response_model=Chatresponse)
-async def chat_endpoint(request: Chatrequest):
-    # Your chat logic here
-    try:
-        customer_id =request.customer_id                  
-        customer_query =request.customer_query
-        result = app.invoke(
-            cast(Any, {"customer_id": customer_id, "customer_query": customer_query}),
-            config=config,
-        )
-        return Chatresponse(final_resul=result["final_result"])
-    except Exception as e:
-        return HTTPException(status_code=500, detail=f"Error processing request: {e}")
+@fast_app.get("/auth/me")
+def get_me(user=Depends(get_current_user)):
+    return {
+        "authenticated": True,
+        "user_id": user.id,
+        "email": user.email,
+    }
 
 
-
+@fast_app.post("/chat", response_model=Chatresponse)
+async def chat_endpoint(
+    request: Chatrequest,
+    user=Depends(get_current_user),
+):
+    # Authentication succeeded, but customer authorization
+    # has not been implemented yet.
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            "Authentication succeeded, but customer account "
+            "authorization is not implemented yet."
+        ),
+    )
