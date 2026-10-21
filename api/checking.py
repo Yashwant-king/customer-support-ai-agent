@@ -4,6 +4,8 @@ from typing import Any
 class Chatrequest(BaseModel):
     customer_id:str
     customer_query:str
+    gmail:Any
+    password:Any
     # final_result:str
     # node_1:Any
     # node_2:Any
@@ -12,6 +14,6 @@ class Chatrequest(BaseModel):
 
 
 class Chatresponse(BaseModel):
-    final_resul:str
+    final_result:str
         
 
