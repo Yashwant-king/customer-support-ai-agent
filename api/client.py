@@ -1,11 +1,12 @@
 import requests
 from graph.random_id import get_random_customer_id
+import os 
 
 data = {
     "customer_id": str(get_random_customer_id()),
     "customer_query": "where is my order ?",
-    "gmail": "yashwantchauhan2911@gmail.co",
-    "password": "@dodo@",
+    "gmail": os.getenv("GMAIL"),
+    "password": os.getenv("PASSWORD"),
 }
 
 
