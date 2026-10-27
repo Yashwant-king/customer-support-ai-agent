@@ -6,6 +6,7 @@ from langchain_groq import ChatGroq
 
 
 #qwen/qwen3.8-27b
+#openai/gpt-oss-20b
 
 
 try:
@@ -13,7 +14,14 @@ try:
     print("LLM initialized successfully.")
 except Exception as e:
     print(f"Error initializing LLM: {e}")
-    raise ValueError("Failed to initialize the LLM. Please check your API key and model name.")
+    print("Second LLM has initialized successfully.")
+    llm=ChatGroq(model="openai/gpt-oss-20b")
+
+
+
+
+
+
 
 
 
