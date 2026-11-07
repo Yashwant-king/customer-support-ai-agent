@@ -1,0 +1,7 @@
+{
+    "total_cases": 2,
+    "tool_selection_accuracy": 100.0,
+    "risk_classification_accuracy": 100.0,
+    "execution_success_rate": 0.0,
+    "average_latency_seconds": 0
+}

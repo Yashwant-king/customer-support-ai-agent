@@ -1,4 +1,5 @@
 from typing import TypedDict, Any, List, Annotated
+
 from langgraph.graph import add_messages
 from langgraph.graph import StateGraph,END,START
 
@@ -16,8 +17,9 @@ class SupportState(TypedDict):
     final_result:Any
     node_1:Any
     blank_list:Any
-    
+    risk:Any
 
 
 
 graph=StateGraph(SupportState)
+

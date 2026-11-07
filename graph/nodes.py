@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from click import prompt
 from graph import state
 from graph.pydantic_classes import RequiredFunctions,Risk_Assessment
@@ -23,7 +25,6 @@ from database.customer_service import (
     get_customer_reviews,
 )
 from tools.rag_tools import search_company_policy
-
 
 #----------------------------------------------------------------------
 def verification_node(state:SupportState):
@@ -81,17 +82,24 @@ def check_risk_node(state: SupportState):
     print(f"Risk assessment details: {risk_assessment}")
 
     result=risk_assessment.risk
+
+
     
 
     if str(result) == 'unsafe':
         return Command(
             update={
-                "final_result": "The query is unsafe to process."
+                "final_result": "The query is unsafe to process.",
+                "risk": str(result)
             },
             goto=END
         )
     else:
-        return Command(goto="node_1")
+        return Command(
+            
+            update={"risk": str(result)},
+            goto="node_1"
+            )
 
 
 #-------------------------------------------------------------------------------
@@ -232,7 +240,7 @@ Select the minimum sufficient set of functions for the actual customer query.
 #-----------------------------------------------------------------------------
 
 def merge_list_node(state: SupportState):
-    """Execute the unique functions selected by node_1 and node_2."""
+    """Execute the unique functions selected by node_1"""
     print("Enter in merge_list_node")
 
     node_1_result = state["node_1"]
@@ -293,7 +301,7 @@ def analyse_answer_node(state: SupportState):
     """Generate a customer answer grounded in retrieved information."""
 
     print("Enter in analyse_answer_node")
-    print(f"node_1: {state.get('node_1')}---------node_2: {state.get('node_2')}\n\n\n")
+    print(f"node_1: {state.get('node_1')}")
 
     customer_query = state["customer_query"]
     retrieved_info = state.get("blank_list", [])

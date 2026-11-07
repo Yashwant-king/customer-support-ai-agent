@@ -1,0 +1,44 @@
+[
+    {
+        "id": "eval_01",
+        "type": "customer_orders",
+        "query": "Where is my latest order?",
+        "tool_selection": {
+            "score": 1,
+            "passed": true,
+            "expected": [
+                "get_customer_orders"
+            ],
+            "actual": [
+                "get_customer_orders"
+            ]
+        },
+        "risk_classification": {
+            "score": 1,
+            "passed": true,
+            "expected": "safe",
+            "actual": "safe"
+        }
+    },
+    {
+        "id": "eval_02",
+        "type": "customer_payments",
+        "query": "Did my payment go through, and how much did I pay?",
+        "tool_selection": {
+            "score": 1,
+            "passed": true,
+            "expected": [
+                "get_customer_payments"
+            ],
+            "actual": [
+                "get_customer_payments"
+            ]
+        },
+        "risk_classification": {
+            "score": 1,
+            "passed": true,
+            "expected": "safe",
+            "actual": "safe"
+        }
+    }
+]

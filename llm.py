@@ -11,10 +11,10 @@ from langchain_groq import ChatGroq
 
 try:
     llm=ChatGroq(model="qwen/qwen3.8-27b")
-    print("LLM initialized successfully.")
+    print("LLM initialized successfully. model: qwen/qwen3.8-27b")
 except Exception as e:
     print(f"Error initializing LLM: {e}")
-    print("Second LLM has initialized successfully.")
+    print("Second LLM has initialized successfully. model: openai/gpt-oss-20b")
     llm=ChatGroq(model="openai/gpt-oss-20b")
 
 
